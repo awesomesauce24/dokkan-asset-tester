@@ -3,8 +3,45 @@
 <title>Dokkan Asset Tester</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#111827;color:#f8fafc}*{box-sizing:border-box}body{margin:0}header{background:#17243d;padding:18px 24px;border-bottom:1px solid #41577e}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#bbd4ff;font-size:13px}main{max-width:1300px;margin:auto;padding:24px}section.hero{padding:24px;border:1px solid #6c8dc0;border-radius:16px;background:linear-gradient(125deg,#365281,#1d2d4d)}.hero h2{margin:6px 0;font-size:30px}.hero p{max-width:750px;color:#d6e9ff}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:23px 0}.controls button{border:1px solid #6b88b6;border-radius:10px;padding:10px 16px;background:#293e65;color:#fff;cursor:pointer;font-weight:700}.controls button.selected{background:#bdeeff;color:#13263d}.controls input{padding:11px;border-radius:10px;border:1px solid #6881aa;background:#14213b;color:white;flex:1;min-width:210px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:16px}.asset{border-radius:15px;overflow:hidden;background:#23324f;border:1px solid #526b91;display:flex;flex-direction:column}.preview{height:210px;display:grid;place-items:center;background:radial-gradient(#3a5280,#21304d);position:relative}.preview img{max-width:92%;max-height:190px;object-fit:contain;filter:drop-shadow(0 7px 12px #0009)}.tag{position:absolute;left:10px;top:10px;padding:4px 9px;border:1px solid #91aee0;background:#172c51;border-radius:20px;font-size:11px;font-weight:800}.detail{padding:15px;display:flex;flex-direction:column;gap:8px;flex:1}.detail strong{overflow-wrap:anywhere;font-size:13px}.path{color:#bed0e9;font-size:11px;overflow-wrap:anywhere}.links{margin-top:auto;display:flex;gap:8px;padding-top:15px}.links a{flex:1;text-decoration:none;text-align:center;border:1px solid #7795c4;color:white;border-radius:8px;padding:9px 4px;background:#304b78;font-size:12px;font-weight:700}small.note{display:block;color:#a8bfdc;margin:15px 0;line-height:1.6}a{color:#8bdcff}#empty{color:#d2def2}
+
+.card-builder{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.card-demo{--glow-color:#f55b64;position:relative;width:240px;aspect-ratio:1;overflow:hidden;border-radius:16px;border:2px solid #8091b5;background:#1d293f;isolation:isolate;flex-shrink:0}
+.card-demo .card-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.card-demo .card-base{z-index:1;opacity:.88;object-fit:cover}
+.card-demo .card-light{position:absolute;inset:7%;z-index:2;border-radius:50%;box-shadow:0 0 22px var(--glow-color),inset 0 0 18px var(--glow-color);animation:card-glow 2s ease-in-out infinite;pointer-events:none}
+.card-demo .card-character{z-index:3;filter:drop-shadow(0 5px 8px #070b18)}
+.card-demo .card-label{position:absolute;z-index:5;border-radius:8px;padding:4px 8px;color:white;background:#111d37d9;font-weight:900;letter-spacing:.05em;font-size:13px;text-shadow:0 1px 2px black;pointer-events:none}
+.card-demo .card-type{top:8px;left:8px;background:var(--glow-color)}
+.card-demo .card-rarity{bottom:8px;left:8px}
+.card-demo .card-eza{bottom:8px;right:8px;background:#ac7a16}
+.card-demo .card-eza[hidden],.card-demo .card-light[hidden]{display:none}
+.card-controls{display:grid;gap:11px;min-width:205px;flex:1}
+.card-controls label{display:grid;gap:6px;font-size:13px;font-weight:700}
+.card-controls select{padding:9px;background:#13233c;color:white;border:1px solid #7187af;border-radius:8px}
+@keyframes card-glow{0%,100%{opacity:.35;transform:scale(.92)}50%{opacity:.85;transform:scale(1.04)}}
+@media(prefers-reduced-motion:reduce){.card-demo .card-light{animation:none}}
 </style></head><body><header><h1>◆ Dokkan Asset Tester</h1><p>Card art and battle sprite texture explorer</p></header>
 <main><section class="hero"><small>CHARACTER ASSET EXPLORER</small><h2 id="cardTitle">Super Saiyan Goku — 1034870</h2><p id="cardDescription">Known Goku artwork and battle textures; other cards use candidate URL patterns.</p><p><a id="cardPageLink" href="https://www.dokkandb.com/cards/1034871" target="_blank" rel="noopener noreferrer">View on DokkanDB</a></p></section>
+<section class="hero" style="margin-top:18px">
+<strong>Custom unit card preview</strong>
+<p style="font-size:13px">Layered visual mockup using the selected card's artwork. Type colors, glow, rarity and EZA/SEZA labels are preview effects, not authentic Eclipse overlay assets.</p>
+<div class="card-builder">
+<div class="card-demo" id="demoCard" aria-label="Layered character card preview">
+<img id="demoBg" class="card-image card-base" alt="Card background">
+<div class="card-light" id="demoGlow"></div>
+<img id="demoCharacter" class="card-image card-character" alt="Character artwork">
+<span id="demoType" class="card-label card-type">STR</span>
+<span id="demoRarity" class="card-label card-rarity">LR</span>
+<span id="demoEza" class="card-label card-eza" hidden>EZA</span>
+</div>
+<div class="card-controls">
+<label>Character type<select id="demoTypeSelect"><option>STR</option><option>AGL</option><option>TEQ</option><option>INT</option><option>PHY</option></select></label>
+<label>Rarity<select id="demoRaritySelect"><option>LR</option><option>UR</option><option>SSR</option><option>SR</option></select></label>
+<label>Upgrade overlay<select id="demoUpgrade"><option value="none">None</option><option value="EZA">EZA</option><option value="SEZA">SEZA</option></select></label>
+<label style="display:flex;align-items:center;gap:8px"><input id="demoGlowToggle" type="checkbox" checked> Animated glow</label>
+<p id="demoNote" style="font-size:12px;margin:2px 0">Preview only. Actual EZA/SEZA border files can be added later.</p>
+</div>
+</div></section>
 <form id="cardLookup" class="controls" style="padding:15px;border:1px solid #526b91;border-radius:12px;background:#1e2d49"><label for="cardId" style="font-weight:800">Search card ID</label><input id="cardId" name="cardId" value="1034870" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" placeholder="e.g. 1034871" required aria-label="Card ID"><button type="submit" style="background:#bdeeff;color:#11243b">Find images</button><button type="button" id="resetCard">Reset to Goku</button></form><p id="searchStatus" aria-live="polite" style="color:#c2d9fb"></p><div class="controls"><button data-filter="all" class="selected">All assets</button><button data-filter="artwork">Card art</button><button data-filter="text">SA text</button><button data-filter="audio">Audio</button><button data-filter="battle">Battle textures</button><button data-filter="video">Super Attack video</button><button data-filter="sa-texture">SA effects</button><button data-filter="lwf">LWF files</button><button data-filter="custom">Added assets</button><input id="search" placeholder="Filter file names or paths..." aria-label="Filter assets"></div>
 <section class="hero" style="padding:16px;margin:0 0 18px;background:#172b4e">
 <strong>Previews unavailable? Import saved image files</strong>
@@ -62,6 +99,23 @@ const saTexturePaths=[
 ];
 const lwfAssets=lwfPaths.map(path=>({path,name:path.split('/').pop(),category:'lwf',media:'lwf',verified:true,url:makeUrl(path,assetVersion)}));
 const saTextureAssets=saTexturePaths.map(path=>({path,name:path.split('/').pop(),category:'sa-texture',media:'image',verified:true,url:makeUrl(path,assetVersion)}));
+const typeColors={STR:'#f45b61',AGL:'#4a9bfc',TEQ:'#45bd79',INT:'#ac71e8',PHY:'#f2b23e'};
+function refreshCardDemo(){
+ const type=document.getElementById('demoTypeSelect').value;
+ document.getElementById('demoCard').style.setProperty('--glow-color',typeColors[type]);
+ document.getElementById('demoType').textContent=type;
+ document.getElementById('demoRarity').textContent=document.getElementById('demoRaritySelect').value;
+ const upgrade=document.getElementById('demoUpgrade').value;
+ const el=document.getElementById('demoEza');el.hidden=upgrade==='none';el.textContent=upgrade;
+ document.getElementById('demoGlow').hidden=!document.getElementById('demoGlowToggle').checked;
+ const base='character/card/'+id+'_folder/card_'+id+'_';
+ const find=(kind)=>assetList(id).find(a=>a.path===base+kind+'.png');
+ for(const [node,kind] of [['demoBg','bg'],['demoCharacter','character']]){
+  const asset=find(kind);
+  const img=document.getElementById(node);img.src=asset?(imported.get(asset.name.toLowerCase())||asset.url):'';
+ }
+}
+document.querySelectorAll('#demoTypeSelect,#demoRaritySelect,#demoUpgrade,#demoGlowToggle').forEach(el=>el.addEventListener('change',refreshCardDemo));
 const extras=new Map();
 function assetList(card){return [...(card==='1034870'?[...knownAssets,...battleAssets,...saVideos,...saAudioSource,...lwfAssets,...saTextureAssets]:standardPaths(card).map(path=>({path,name:path.split('/').pop(),category:'artwork',verified:false,url:makeUrl(path,null)}))),...(extras.get(card)||[])];}
 function parseAssetUrl(raw){
@@ -109,6 +163,7 @@ function searchCard(raw){
  document.getElementById('cardPageLink').textContent='Try card page on DokkanDB';
  document.getElementById('cardId').value=requested;
  render();
+ refreshCardDemo();
 }
 document.getElementById('cardLookup').addEventListener('submit',e=>{e.preventDefault();searchCard(document.getElementById('cardId').value)});
 document.getElementById('resetCard').addEventListener('click',()=>searchCard('1034870'));
