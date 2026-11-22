@@ -14,7 +14,7 @@
 <button id="clearLocal" style="padding:10px;border:1px solid #6b88b6;background:#304b78;color:#fff;border-radius:9px;cursor:pointer;margin-left:8px">Clear imports</button>
 <p id="importStatus" aria-live="polite" style="font-size:12px">Imported files are matched using their filenames.</p>
 </section><p id="count" aria-live="polite"></p><div class="grid" id="grid"></div><p id="empty" hidden>No matching assets.</p>
-<small class="note">Use View / save image, then right-click the image and choose Save image as. The link opens DokkanDB's asset server. Availability may change, and some downloads require authorization. This static GitHub Pages version doesn't perform ZIP downloads or authenticate with DokkanDB. Only retrieve files you are permitted to access.</small>
+<small class="note">Download PNG attempts a browser download. If DokkanDB blocks cross-origin fetching, the fallback opens the image for manual saving. Imported images download directly. Availability may change, and some downloads require authorization. This static GitHub Pages version doesn't perform ZIP downloads or authenticate with DokkanDB. Only retrieve files you are permitted to access.</small>
 </main><script>
 const id='1034870';
 const artBase='character/card/'+id+'_folder/';
@@ -98,8 +98,43 @@ document.getElementById('clearLocal').addEventListener('click',async()=>{
  try{await clearSaved();for(const url of imported.values())URL.revokeObjectURL(url);imported.clear();document.getElementById('importStatus').textContent='Imported images cleared.';render();}
  catch(e){document.getElementById('importStatus').textContent='Could not clear files: '+e.message;}
 });
+function triggerDownload(url,filename){
+ const a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';document.body.append(a);a.click();a.remove();
+}
+async function downloadPng(asset,button){
+ const name=asset.name.toLowerCase();
+ const original=button.textContent;
+ button.disabled=true;button.textContent='Downloading...';
+ try {
+  const stored=await getSaved(name).catch(()=>null);
+  if(stored){
+   const objectUrl=URL.createObjectURL(stored);
+   triggerDownload(objectUrl,asset.name);
+   setTimeout(()=>URL.revokeObjectURL(objectUrl),30000);
+   document.getElementById('importStatus').textContent='Downloaded imported image: '+asset.name;
+   return;
+  }
+  const res=await fetch(asset.url,{mode:'cors',referrerPolicy:'no-referrer'});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const contentType=res.headers.get('content-type')||'';
+  if(!contentType.startsWith('image/'))throw new Error('Server did not return an image');
+  const blob=await res.blob();
+  const url=URL.createObjectURL(blob);
+  triggerDownload(url,asset.name);
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  document.getElementById('importStatus').textContent='Downloaded: '+asset.name;
+ }catch(err){
+  // Cross-origin anchor download may navigate instead of downloading.
+  const link=document.createElement('a');link.href=asset.url;link.download=asset.name;
+  link.target='_blank';link.rel='noopener noreferrer';link.referrerPolicy='no-referrer';
+  link.style.display='none';document.body.append(link);link.click();link.remove();
+  document.getElementById('importStatus').textContent='Automatic download was blocked ('+err.message+'). Opened the original image; right-click it and choose Save image as if it did not download.';
+ }finally{
+  button.disabled=false;button.textContent=original;
+ }
+}
 const grid=document.getElementById('grid'),count=document.getElementById('count'),empty=document.getElementById('empty');let selected='all';
 function render(){const q=document.getElementById('search').value.trim().toLowerCase();const visible=assets.filter(a=>(selected==='all'||a.category===selected)&&(a.path.toLowerCase().includes(q)));grid.replaceChildren();count.textContent=visible.length+' / '+assets.length+' observed image URLs';empty.hidden=visible.length!==0;
-for(const a of visible){const card=document.createElement('article');card.className='asset';const preview=document.createElement('div');preview.className='preview';const img=document.createElement('img');img.referrerPolicy='no-referrer';img.src=imported.get(a.name.toLowerCase())||a.url;img.alt=a.name;img.loading='lazy';img.onerror=()=>{img.alt='Preview unavailable';img.style.display='none';const msg=document.createElement('span');msg.style.cssText='font-size:12px;color:#dce8fc;text-align:center;padding:20px';msg.textContent='Remote preview unavailable. Click Open image, save the file, then Import PNG files above.';preview.append(msg)};const tag=document.createElement('span');tag.className='tag';tag.textContent=a.category==='battle'?'BATTLE':'CARD ART';preview.append(img,tag);const detail=document.createElement('div');detail.className='detail';const name=document.createElement('strong');name.textContent=a.name;const path=document.createElement('span');path.className='path';path.textContent=a.path;const links=document.createElement('div');links.className='links';const open=document.createElement('a');open.href=a.url;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';open.textContent='Open image';open.textContent='View / save image';open.title='Open original image; right-click and choose Save image as';links.append(open);detail.append(name,path,links);card.append(preview,detail);grid.append(card)}}
+for(const a of visible){const card=document.createElement('article');card.className='asset';const preview=document.createElement('div');preview.className='preview';const img=document.createElement('img');img.referrerPolicy='no-referrer';img.src=imported.get(a.name.toLowerCase())||a.url;img.alt=a.name;img.loading='lazy';img.onerror=()=>{img.alt='Preview unavailable';img.style.display='none';const msg=document.createElement('span');msg.style.cssText='font-size:12px;color:#dce8fc;text-align:center;padding:20px';msg.textContent='Remote preview unavailable. Click Open image, save the file, then Import PNG files above.';preview.append(msg)};const tag=document.createElement('span');tag.className='tag';tag.textContent=a.category==='battle'?'BATTLE':'CARD ART';preview.append(img,tag);const detail=document.createElement('div');detail.className='detail';const name=document.createElement('strong');name.textContent=a.name;const path=document.createElement('span');path.className='path';path.textContent=a.path;const links=document.createElement('div');links.className='links';const open=document.createElement('a');open.href=a.url;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';open.textContent='View image';open.title='Open original image';const save=document.createElement('button');save.type='button';save.textContent='Download PNG';save.style.cssText='flex:1;border:1px solid #7795c4;color:#fff;border-radius:8px;padding:9px 4px;background:#355e80;font-size:12px;font-weight:700;cursor:pointer';save.addEventListener('click',()=>downloadPng(a,save));links.append(open,save);detail.append(name,path,links);card.append(preview,detail);grid.append(card)}}
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('selected',x===b));render()}));document.getElementById('search').addEventListener('input',render);render();restoreSaved();
 </script></body></html>
