@@ -6,7 +6,14 @@
 </style></head><body><header><h1>◆ Dokkan Asset Tester</h1><p>Nine observed asset URLs · no catalog login required for this viewer</p></header>
 <main><section class="hero"><small>CHARACTER ASSET EXPLORER</small><h2>Super Saiyan Goku — 1034870</h2><p>Browse the nine card-image URLs observed returning 200 OK in DevTools. Battle sprites, LWF animations, and SFX still need verified file URLs.</p><p>Source: <a href="https://www.dokkandb.com/cards/1034871" target="_blank" rel="noopener noreferrer">DokkanDB card page</a></p></section>
 <div class="controls"><button data-filter="all" class="selected">All assets</button><button data-filter="artwork">Card art</button><input id="search" placeholder="Filter file names or paths..." aria-label="Filter assets"></div>
-<p id="count" aria-live="polite"></p><div class="grid" id="grid"></div><p id="empty" hidden>No matching assets.</p>
+<section class="hero" style="padding:16px;margin:0 0 18px;background:#172b4e">
+<strong>Previews unavailable? Import saved image files</strong>
+<p style="font-size:13px">Open an image from DokkanDB and use “Save image as…”. Then import those PNGs here. They stay on your device and are saved in this browser for later visits.</p>
+<label for="localFiles" style="display:inline-block;padding:10px 15px;background:#bdeeff;color:#10213d;border-radius:9px;font-weight:800;cursor:pointer">Import PNG files</label>
+<input id="localFiles" type="file" accept="image/*" multiple style="display:none">
+<button id="clearLocal" style="padding:10px;border:1px solid #6b88b6;background:#304b78;color:#fff;border-radius:9px;cursor:pointer;margin-left:8px">Clear imports</button>
+<p id="importStatus" aria-live="polite" style="font-size:12px">Imported files are matched using their filenames.</p>
+</section><p id="count" aria-live="polite"></p><div class="grid" id="grid"></div><p id="empty" hidden>No matching assets.</p>
 <small class="note">The links go to DokkanDB's asset server. Availability may change, and some downloads require authorization. This static GitHub Pages version doesn't perform ZIP downloads or authenticate with DokkanDB. Only retrieve files you are permitted to access.</small>
 </main><script>
 const id='1034870';
@@ -28,8 +35,71 @@ const makeUrl=(path,version)=>'https://api.dokkandb.com/assets/'+path.split('/')
 const assets=known.map(([path,version])=>({path,name:path.split('/').pop(),category:'artwork',verified:true,url:makeUrl(path,version)}));
 // Battle texture names in our first GitHub build were speculative.
 // Do not represent invented filenames as verified downloads.
+const imported=new Map();
+const dbPromise=new Promise((resolve,reject)=>{
+ const request=indexedDB.open('dokkan-local-assets',1);
+ request.onupgradeneeded=()=>request.result.createObjectStore('images');
+ request.onsuccess=()=>resolve(request.result);
+ request.onerror=()=>reject(request.error);
+});
+async function readAllSaved(){
+ const db=await dbPromise;
+ return await new Promise((resolve,reject)=>{
+  const tx=db.transaction('images','readonly'), store=tx.objectStore('images');
+  const request=store.getAllKeys();
+  request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+ });
+}
+async function getSaved(name){
+ const db=await dbPromise;return await new Promise((resolve,reject)=>{
+  const tx=db.transaction('images','readonly'),request=tx.objectStore('images').get(name);
+  request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+ });
+}
+async function putSaved(name,blob){
+ const db=await dbPromise;return await new Promise((resolve,reject)=>{
+  const tx=db.transaction('images','readwrite');
+  tx.objectStore('images').put(blob,name);
+  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+ });
+}
+async function clearSaved(){
+ const db=await dbPromise;return await new Promise((resolve,reject)=>{
+  const tx=db.transaction('images','readwrite');
+  tx.objectStore('images').clear();
+  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+ });
+}
+async function restoreSaved(){
+ try{
+  for(const name of await readAllSaved()){
+   const blob=await getSaved(name);
+   if(blob)imported.set(name,URL.createObjectURL(blob));
+  }
+  document.getElementById('importStatus').textContent=imported.size+' saved image(s) available in this browser.';
+  render();
+ }catch(e){document.getElementById('importStatus').textContent='Browser image storage unavailable: '+e.message;}
+}
+document.getElementById('localFiles').addEventListener('change',async event=>{
+ let added=0;
+ for(const file of event.target.files){
+  if(!file.type.startsWith('image/')||file.size>15*1024*1024)continue;
+  const name=file.name.toLowerCase();
+  try{
+   await putSaved(name,file);
+   if(imported.has(name))URL.revokeObjectURL(imported.get(name));
+   imported.set(name,URL.createObjectURL(file));added++;
+  }catch(e){document.getElementById('importStatus').textContent='Could not save '+name+': '+e.message;return;}
+ }
+ document.getElementById('importStatus').textContent='Imported '+added+' image(s). Match files by their original names.';
+ event.target.value='';render();
+});
+document.getElementById('clearLocal').addEventListener('click',async()=>{
+ try{await clearSaved();for(const url of imported.values())URL.revokeObjectURL(url);imported.clear();document.getElementById('importStatus').textContent='Imported images cleared.';render();}
+ catch(e){document.getElementById('importStatus').textContent='Could not clear files: '+e.message;}
+});
 const grid=document.getElementById('grid'),count=document.getElementById('count'),empty=document.getElementById('empty');let selected='all';
 function render(){const q=document.getElementById('search').value.trim().toLowerCase();const visible=assets.filter(a=>(selected==='all'||a.category===selected)&&(a.path.toLowerCase().includes(q)));grid.replaceChildren();count.textContent=visible.length+' / '+assets.length+' observed image URLs';empty.hidden=visible.length!==0;
-for(const a of visible){const card=document.createElement('article');card.className='asset';const preview=document.createElement('div');preview.className='preview';const img=document.createElement('img');img.referrerPolicy='no-referrer';img.src=a.url;img.alt=a.name;img.loading='lazy';img.onerror=()=>{img.alt='Preview unavailable';img.style.display='none';const msg=document.createElement('span');msg.style.cssText='font-size:12px;color:#dce8fc;text-align:center;padding:20px';msg.textContent='Preview blocked or unavailable — try Open image';preview.append(msg)};const tag=document.createElement('span');tag.className='tag';tag.textContent=a.category==='battle'?'BATTLE':'CARD ART';preview.append(img,tag);const detail=document.createElement('div');detail.className='detail';const name=document.createElement('strong');name.textContent=a.name;const path=document.createElement('span');path.className='path';path.textContent=a.path;const links=document.createElement('div');links.className='links';const open=document.createElement('a');open.href=a.url;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';open.textContent='Open image';const download=document.createElement('a');download.href=a.url;download.target='_blank';download.rel='noopener noreferrer';download.referrerPolicy='no-referrer';download.textContent='Save image';download.title='Open image, then use Save image as in your browser';links.append(open,download);detail.append(name,path,links);card.append(preview,detail);grid.append(card)}}
-document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('selected',x===b));render()}));document.getElementById('search').addEventListener('input',render);render();
+for(const a of visible){const card=document.createElement('article');card.className='asset';const preview=document.createElement('div');preview.className='preview';const img=document.createElement('img');img.referrerPolicy='no-referrer';img.src=imported.get(a.name.toLowerCase())||a.url;img.alt=a.name;img.loading='lazy';img.onerror=()=>{img.alt='Preview unavailable';img.style.display='none';const msg=document.createElement('span');msg.style.cssText='font-size:12px;color:#dce8fc;text-align:center;padding:20px';msg.textContent='Remote preview unavailable. Click Open image, save the file, then Import PNG files above.';preview.append(msg)};const tag=document.createElement('span');tag.className='tag';tag.textContent=a.category==='battle'?'BATTLE':'CARD ART';preview.append(img,tag);const detail=document.createElement('div');detail.className='detail';const name=document.createElement('strong');name.textContent=a.name;const path=document.createElement('span');path.className='path';path.textContent=a.path;const links=document.createElement('div');links.className='links';const open=document.createElement('a');open.href=a.url;open.target='_blank';open.rel='noopener noreferrer';open.referrerPolicy='no-referrer';open.textContent='Open image';const download=document.createElement('a');download.href=a.url;download.target='_blank';download.rel='noopener noreferrer';download.referrerPolicy='no-referrer';download.textContent='Save image';download.title='Open image, then use Save image as in your browser';links.append(open,download);detail.append(name,path,links);card.append(preview,detail);grid.append(card)}}
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('selected',x===b));render()}));document.getElementById('search').addEventListener('input',render);render();restoreSaved();
 </script></body></html>
