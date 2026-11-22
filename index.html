@@ -15,6 +15,12 @@
 .card-demo .card-rarity{bottom:8px;left:8px}
 .card-demo .card-eza{bottom:8px;right:8px;background:#ac7a16}
 .card-demo .card-eza[hidden],.card-demo .card-light[hidden]{display:none}
+.card-demo .card-badge-image{position:absolute;z-index:6;max-height:63px;max-width:85px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 5px #000a)}
+.card-demo .card-badge-image[hidden]{display:none}
+.card-demo .rarity-image{left:6px;bottom:5px}
+.card-demo .type-image{right:7px;top:7px;width:55px;height:55px}
+.card-controls input[type=url]{padding:9px;background:#13233c;color:white;border:1px solid #7187af;border-radius:8px;width:100%;min-width:0}
+
 .card-controls{display:grid;gap:11px;min-width:205px;flex:1}
 .card-controls label{display:grid;gap:6px;font-size:13px;font-weight:700}
 .card-controls select{padding:9px;background:#13233c;color:white;border:1px solid #7187af;border-radius:8px}
@@ -33,13 +39,19 @@
 <span id="demoType" class="card-label card-type">STR</span>
 <span id="demoRarity" class="card-label card-rarity">LR</span>
 <span id="demoEza" class="card-label card-eza" hidden>EZA</span>
+<img id="demoRarityImage" class="card-badge-image rarity-image" alt="Game rarity badge" hidden>
+<img id="demoTypeImage" class="card-badge-image type-image" alt="Game type badge" hidden>
 </div>
 <div class="card-controls">
+<label>Card class<select id="demoClassSelect"><option value="super">Super</option><option value="extreme">Extreme</option></select></label>
 <label>Character type<select id="demoTypeSelect"><option>STR</option><option>AGL</option><option>TEQ</option><option>INT</option><option>PHY</option></select></label>
 <label>Rarity<select id="demoRaritySelect"><option>LR</option><option>UR</option><option>SSR</option><option>SR</option></select></label>
 <label>Upgrade overlay<select id="demoUpgrade"><option value="none">None</option><option value="EZA">EZA</option><option value="SEZA">SEZA</option></select></label>
 <label style="display:flex;align-items:center;gap:8px"><input id="demoGlowToggle" type="checkbox" checked> Animated glow</label>
-<p id="demoNote" style="font-size:12px;margin:2px 0">Preview only. Actual EZA/SEZA border files can be added later.</p>
+<label>Rarity badge URL (optional)<input id="demoRarityUrl" type="url" placeholder="Verified PNG URL"></label>
+<label>Type badge URL (optional)<input id="demoTypeUrl" type="url" placeholder="Verified PNG URL"></label>
+<label style="display:flex;align-items:center;gap:8px"><input id="demoRealBadges" type="checkbox" checked> Use observed game PNG badges when available</label>
+<p id="demoNote" style="font-size:12px;margin:2px 0">The observed UR rarity badge and type icon 10 can be previewed; other mappings are not yet verified. Custom badge URLs must point directly to image files. EZA/SEZA are still labels, not game borders.</p>
 </div>
 </div></section>
 <form id="cardLookup" class="controls" style="padding:15px;border:1px solid #526b91;border-radius:12px;background:#1e2d49"><label for="cardId" style="font-weight:800">Search card ID</label><input id="cardId" name="cardId" value="1034870" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" placeholder="e.g. 1034871" required aria-label="Card ID"><button type="submit" style="background:#bdeeff;color:#11243b">Find images</button><button type="button" id="resetCard">Reset to Goku</button></form><p id="searchStatus" aria-live="polite" style="color:#c2d9fb"></p><div class="controls"><button data-filter="all" class="selected">All assets</button><button data-filter="artwork">Card art</button><button data-filter="text">SA text</button><button data-filter="audio">Audio</button><button data-filter="battle">Battle textures</button><button data-filter="video">Super Attack video</button><button data-filter="sa-texture">SA effects</button><button data-filter="lwf">LWF files</button><button data-filter="custom">Added assets</button><input id="search" placeholder="Filter file names or paths..." aria-label="Filter assets"></div>
@@ -100,6 +112,17 @@ const saTexturePaths=[
 const lwfAssets=lwfPaths.map(path=>({path,name:path.split('/').pop(),category:'lwf',media:'lwf',verified:true,url:makeUrl(path,assetVersion)}));
 const saTextureAssets=saTexturePaths.map(path=>({path,name:path.split('/').pop(),category:'sa-texture',media:'image',verified:true,url:makeUrl(path,assetVersion)}));
 const typeColors={STR:'#f45b61',AGL:'#4a9bfc',TEQ:'#45bd79',INT:'#ac71e8',PHY:'#f2b23e'};
+const observedRarityUrl=makeUrl('layout/en/image/character_folder/cha_rare_ur.png',assetVersion);
+const observedTypeUrl=makeUrl('layout/en/image/character_folder/cha_type_icon_10.png',assetVersion);
+function safeBadgeUrl(value){
+ try{const u=new URL(value);return u.protocol==='https:'&&['api.dokkandb.com','www.dokkandb.com'].includes(u.hostname)?u.href:null}catch{return null}
+}
+function setBadge(imgId,labelId,url){
+ const img=document.getElementById(imgId),label=document.getElementById(labelId);
+ if(url){img.src=url;img.hidden=false;label.hidden=true;img.onerror=()=>{img.hidden=true;label.hidden=false}}
+ else{img.removeAttribute('src');img.hidden=true;label.hidden=false}
+}
+
 function refreshCardDemo(){
  const type=document.getElementById('demoTypeSelect').value;
  document.getElementById('demoCard').style.setProperty('--glow-color',typeColors[type]);
@@ -108,6 +131,14 @@ function refreshCardDemo(){
  const upgrade=document.getElementById('demoUpgrade').value;
  const el=document.getElementById('demoEza');el.hidden=upgrade==='none';el.textContent=upgrade;
  document.getElementById('demoGlow').hidden=!document.getElementById('demoGlowToggle').checked;
+ const useObserved=document.getElementById('demoRealBadges').checked;
+ const customRarity=safeBadgeUrl(document.getElementById('demoRarityUrl').value);
+ const customType=safeBadgeUrl(document.getElementById('demoTypeUrl').value);
+ const rarity=document.getElementById('demoRaritySelect').value;
+ setBadge('demoRarityImage','demoRarity',customRarity||(useObserved&&rarity==='UR'?observedRarityUrl:null));
+ // Icon 10 is observed for the Goku page, but its full class/type mapping is not established.
+ setBadge('demoTypeImage','demoType',customType||(useObserved&&id==='1034870'&&type==='STR'&&document.getElementById('demoClassSelect').value==='super'?observedTypeUrl:null));
+
  const base='character/card/'+id+'_folder/card_'+id+'_';
  const find=(kind)=>assetList(id).find(a=>a.path===base+kind+'.png');
  for(const [node,kind] of [['demoBg','bg'],['demoCharacter','character']]){
@@ -115,7 +146,7 @@ function refreshCardDemo(){
   const img=document.getElementById(node);img.src=asset?(imported.get(asset.name.toLowerCase())||asset.url):'';
  }
 }
-document.querySelectorAll('#demoTypeSelect,#demoRaritySelect,#demoUpgrade,#demoGlowToggle').forEach(el=>el.addEventListener('change',refreshCardDemo));
+document.querySelectorAll('#demoClassSelect,#demoTypeSelect,#demoRaritySelect,#demoUpgrade,#demoGlowToggle,#demoRarityUrl,#demoTypeUrl,#demoRealBadges').forEach(el=>el.addEventListener('input',refreshCardDemo));
 const extras=new Map();
 function assetList(card){return [...(card==='1034870'?[...knownAssets,...battleAssets,...saVideos,...saAudioSource,...lwfAssets,...saTextureAssets]:standardPaths(card).map(path=>({path,name:path.split('/').pop(),category:'artwork',verified:false,url:makeUrl(path,null)}))),...(extras.get(card)||[])];}
 function parseAssetUrl(raw){
