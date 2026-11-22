@@ -5,17 +5,27 @@
 :root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#111827;color:#f8fafc}*{box-sizing:border-box}body{margin:0}header{background:#17243d;padding:18px 24px;border-bottom:1px solid #41577e}header h1{margin:0;font-size:23px}header p{margin:6px 0 0;color:#bbd4ff;font-size:13px}main{max-width:1300px;margin:auto;padding:24px}section.hero{padding:24px;border:1px solid #6c8dc0;border-radius:16px;background:linear-gradient(125deg,#365281,#1d2d4d)}.hero h2{margin:6px 0;font-size:30px}.hero p{max-width:750px;color:#d6e9ff}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:23px 0}.controls button{border:1px solid #6b88b6;border-radius:10px;padding:10px 16px;background:#293e65;color:#fff;cursor:pointer;font-weight:700}.controls button.selected{background:#bdeeff;color:#13263d}.controls input{padding:11px;border-radius:10px;border:1px solid #6881aa;background:#14213b;color:white;flex:1;min-width:210px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:16px}.asset{border-radius:15px;overflow:hidden;background:#23324f;border:1px solid #526b91;display:flex;flex-direction:column}.preview{height:210px;display:grid;place-items:center;background:radial-gradient(#3a5280,#21304d);position:relative}.preview img{max-width:92%;max-height:190px;object-fit:contain;filter:drop-shadow(0 7px 12px #0009)}.tag{position:absolute;left:10px;top:10px;padding:4px 9px;border:1px solid #91aee0;background:#172c51;border-radius:20px;font-size:11px;font-weight:800}.detail{padding:15px;display:flex;flex-direction:column;gap:8px;flex:1}.detail strong{overflow-wrap:anywhere;font-size:13px}.path{color:#bed0e9;font-size:11px;overflow-wrap:anywhere}.links{margin-top:auto;display:flex;gap:8px;padding-top:15px}.links a{flex:1;text-decoration:none;text-align:center;border:1px solid #7795c4;color:white;border-radius:8px;padding:9px 4px;background:#304b78;font-size:12px;font-weight:700}small.note{display:block;color:#a8bfdc;margin:15px 0;line-height:1.6}a{color:#8bdcff}#empty{color:#d2def2}
 
 .card-builder{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:16px}
-.card-demo{--glow-color:#f55b64;position:relative;width:240px;aspect-ratio:1;overflow:hidden;border-radius:16px;border:2px solid #8091b5;background:#1d293f;isolation:isolate;flex-shrink:0}
+.card-demo{--glow-color:#f55b64;position:relative;width:260px;aspect-ratio:1;overflow:hidden;border-radius:16px;border:2px solid #8091b5;background:#1d293f;isolation:isolate;flex-shrink:0;box-shadow:0 12px 28px #050c1b95}
+.card-demo .game-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:12;pointer-events:none}
+.card-demo .game-thumb[hidden]{display:none}
+.card-demo.authentic{border-color:#6c8dc0;background:#1a2843}
+.card-demo .card-border{position:absolute;inset:3px;z-index:4;border:5px ridge #e4cb79;border-radius:11px;pointer-events:none;box-shadow:inset 0 0 12px #000a,0 0 9px var(--glow-color)}
+.card-demo .card-border:after{content:'';position:absolute;inset:4px;border:1px solid #fff8cc99;border-radius:5px}
+.card-demo .card-sparks{z-index:3;position:absolute;inset:-40%;pointer-events:none;background:conic-gradient(from 0deg at 50% 50%,transparent 0deg,transparent 21deg,#ffffff33 23deg,transparent 27deg,transparent 60deg,var(--glow-color) 63deg,transparent 67deg,transparent 120deg,#fff7 122deg,transparent 126deg,transparent 180deg);mix-blend-mode:screen;animation:card-spin 9s linear infinite}
+.card-demo .card-sparks[hidden]{display:none}
+.card-demo .card-border[hidden]{display:none}
+@keyframes card-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.card-demo .card-sparks{animation:none}}
 .card-demo .card-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
-.card-demo .card-base{z-index:1;opacity:.88;object-fit:cover}
+.card-demo .card-base{z-index:1;opacity:1;object-fit:cover}
 .card-demo .card-light{position:absolute;inset:7%;z-index:2;border-radius:50%;box-shadow:0 0 22px var(--glow-color),inset 0 0 18px var(--glow-color);animation:card-glow 2s ease-in-out infinite;pointer-events:none}
-.card-demo .card-character{z-index:3;filter:drop-shadow(0 5px 8px #070b18)}
-.card-demo .card-label{position:absolute;z-index:5;border-radius:8px;padding:4px 8px;color:white;background:#111d37d9;font-weight:900;letter-spacing:.05em;font-size:13px;text-shadow:0 1px 2px black;pointer-events:none}
-.card-demo .card-type{top:8px;left:8px;background:var(--glow-color)}
-.card-demo .card-rarity{bottom:8px;left:8px}
-.card-demo .card-eza{bottom:8px;right:8px;background:#ac7a16}
+.card-demo .card-character{z-index:5;filter:drop-shadow(0 5px 8px #070b18)}
+.card-demo .card-label{position:absolute;z-index:8;border-radius:8px;padding:4px 8px;color:white;background:#111d37d9;font-weight:900;letter-spacing:.05em;font-size:13px;text-shadow:0 1px 2px black;pointer-events:none}
+.card-demo .card-type{top:10px;right:10px;left:auto;background:var(--glow-color);border:2px solid #ffffffe0;border-radius:50%;width:53px;height:53px;display:flex;justify-content:center;align-items:center;box-shadow:0 3px 10px #0009}
+.card-demo .card-rarity{bottom:8px;left:8px;color:#f9e8a1;font-style:italic;font-size:26px;letter-spacing:-1px;transform:skewX(-8deg);-webkit-text-stroke:.8px #351809;text-shadow:1px 2px 0 #472f13,0 0 8px #ffcf61;background:transparent;padding:0 3px}
+.card-demo .card-eza{bottom:8px;right:8px;background:linear-gradient(115deg,#79500c,#fcd36d,#a46c05);border:1px solid #ffe7a0;box-shadow:0 0 10px #f2bd44bb}
 .card-demo .card-eza[hidden],.card-demo .card-light[hidden]{display:none}
-.card-demo .card-badge-image{position:absolute;z-index:6;max-height:63px;max-width:85px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 5px #000a)}
+.card-demo .card-badge-image{position:absolute;z-index:9;max-height:63px;max-width:85px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 2px 5px #000a)}
 .card-demo .card-badge-image[hidden]{display:none}
 .card-demo .rarity-image{left:6px;bottom:5px}
 .card-demo .type-image{right:7px;top:7px;width:55px;height:55px}
@@ -30,9 +40,12 @@
 <main><section class="hero"><small>CHARACTER ASSET EXPLORER</small><h2 id="cardTitle">Super Saiyan Goku — 1034870</h2><p id="cardDescription">Known Goku artwork and battle textures; other cards use candidate URL patterns.</p><p><a id="cardPageLink" href="https://www.dokkandb.com/cards/1034871" target="_blank" rel="noopener noreferrer">View on DokkanDB</a></p></section>
 <section class="hero" style="margin-top:18px">
 <strong>Custom unit card preview</strong>
-<p style="font-size:13px">Layered visual mockup using the selected card's artwork. Type colors, glow, rarity and EZA/SEZA labels are preview effects, not authentic Eclipse overlay assets.</p>
+<p style="font-size:13px">Choose the original assembled game thumbnail for an authentic reference, or switch to editable layers to design a custom card. CSS upgrade effects are visual prototypes, not game assets.</p>
 <div class="card-builder">
-<div class="card-demo" id="demoCard" aria-label="Layered character card preview">
+<div class="card-demo authentic" id="demoCard" aria-label="Character card preview">
+<img id="demoThumb" class="game-thumb" alt="Original composed Dokkan character thumbnail">
+<div id="demoSparks" class="card-sparks"></div>
+<div id="demoBorder" class="card-border"></div>
 <img id="demoBg" class="card-image card-base" alt="Card background">
 <div class="card-light" id="demoGlow"></div>
 <img id="demoCharacter" class="card-image card-character" alt="Character artwork">
@@ -43,6 +56,8 @@
 <img id="demoTypeImage" class="card-badge-image type-image" alt="Game type badge" hidden>
 </div>
 <div class="card-controls">
+<label>Preview mode<select id="demoMode"><option value="authentic">Original game thumbnail</option><option value="custom">Custom layers</option></select></label>
+<p id="demoModeStatus" style="font-size:12px;margin:0;color:#d7e5ff">Showing the original character thumbnail if available. Switch to Custom layers to edit the design.</p>
 <label>Card class<select id="demoClassSelect"><option value="super">Super</option><option value="extreme">Extreme</option></select></label>
 <label>Character type<select id="demoTypeSelect"><option>STR</option><option>AGL</option><option>TEQ</option><option>INT</option><option>PHY</option></select></label>
 <label>Rarity<select id="demoRaritySelect"><option>LR</option><option>UR</option><option>SSR</option><option>SR</option></select></label>
@@ -51,7 +66,7 @@
 <label>Rarity badge URL (optional)<input id="demoRarityUrl" type="url" placeholder="Verified PNG URL"></label>
 <label>Type badge URL (optional)<input id="demoTypeUrl" type="url" placeholder="Verified PNG URL"></label>
 <label style="display:flex;align-items:center;gap:8px"><input id="demoRealBadges" type="checkbox" checked> Use observed game PNG badges when available</label>
-<p id="demoNote" style="font-size:12px;margin:2px 0">The observed UR rarity badge and type icon 10 can be previewed; other mappings are not yet verified. Custom badge URLs must point directly to image files. EZA/SEZA are still labels, not game borders.</p>
+<p id="demoNote" style="font-size:12px;margin:2px 0">Original thumbnail is a real image; Custom layers is a CSS approximation using game artwork. The observed UR/icon 10 assets may load; if not, decorative fallback badges appear. EZA/SEZA still need authentic frame files.</p>
 </div>
 </div></section>
 <form id="cardLookup" class="controls" style="padding:15px;border:1px solid #526b91;border-radius:12px;background:#1e2d49"><label for="cardId" style="font-weight:800">Search card ID</label><input id="cardId" name="cardId" value="1034870" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" placeholder="e.g. 1034871" required aria-label="Card ID"><button type="submit" style="background:#bdeeff;color:#11243b">Find images</button><button type="button" id="resetCard">Reset to Goku</button></form><p id="searchStatus" aria-live="polite" style="color:#c2d9fb"></p><div class="controls"><button data-filter="all" class="selected">All assets</button><button data-filter="artwork">Card art</button><button data-filter="text">SA text</button><button data-filter="audio">Audio</button><button data-filter="battle">Battle textures</button><button data-filter="video">Super Attack video</button><button data-filter="sa-texture">SA effects</button><button data-filter="lwf">LWF files</button><button data-filter="custom">Added assets</button><input id="search" placeholder="Filter file names or paths..." aria-label="Filter assets"></div>
@@ -123,6 +138,23 @@ function setBadge(imgId,labelId,url){
  else{img.removeAttribute('src');img.hidden=true;label.hidden=false}
 }
 
+function selectCompositorMode(){
+ const thumb=document.getElementById('demoThumb'),frame=document.getElementById('demoCard');
+ const authentic=document.getElementById('demoMode').value==='authentic';
+ const all=['demoBg','demoCharacter','demoGlow','demoSparks','demoBorder','demoType','demoRarity','demoEza','demoRarityImage','demoTypeImage'];
+ if(authentic){
+  frame.classList.add('authentic');thumb.hidden=false;
+  all.forEach(k=>document.getElementById(k).style.visibility='hidden');
+  document.getElementById('demoModeStatus').textContent='Original Dokkan thumbnail: exact assembled game image, with no editable overlays.';
+  const src=assetList(id).find(a=>a.path==='character/thumb/card_'+id+'_thumb_folder/card_'+id+'_thumb.png');
+  if(src){thumb.onerror=()=>{document.getElementById('demoMode').value='custom';selectCompositorMode();document.getElementById('demoModeStatus').textContent='Thumbnail did not load, so the custom layered preview is shown.'};thumb.src=imported.get(src.name.toLowerCase())||src.url}
+  else{document.getElementById('demoMode').value='custom';selectCompositorMode();document.getElementById('demoModeStatus').textContent='No thumbnail path known for this card. Showing custom layered preview.'}
+ }else{
+  frame.classList.remove('authentic');thumb.hidden=true;thumb.removeAttribute('src');
+  all.forEach(k=>document.getElementById(k).style.visibility='');
+  document.getElementById('demoModeStatus').textContent='Custom layers: game art with a CSS glow/frame and selectable labels. Not an authentic game animation.';
+ }
+}
 function refreshCardDemo(){
  const type=document.getElementById('demoTypeSelect').value;
  document.getElementById('demoCard').style.setProperty('--glow-color',typeColors[type]);
@@ -139,14 +171,17 @@ function refreshCardDemo(){
  // Icon 10 is observed for the Goku page, but its full class/type mapping is not established.
  setBadge('demoTypeImage','demoType',customType||(useObserved&&id==='1034870'&&type==='STR'&&document.getElementById('demoClassSelect').value==='super'?observedTypeUrl:null));
 
+ document.getElementById('demoSparks').hidden=!document.getElementById('demoGlowToggle').checked;
+ document.getElementById('demoBorder').style.borderColor=upgrade==='none'?'#c5a95e':'#ffe4a6';
  const base='character/card/'+id+'_folder/card_'+id+'_';
  const find=(kind)=>assetList(id).find(a=>a.path===base+kind+'.png');
  for(const [node,kind] of [['demoBg','bg'],['demoCharacter','character']]){
   const asset=find(kind);
   const img=document.getElementById(node);img.src=asset?(imported.get(asset.name.toLowerCase())||asset.url):'';
  }
+ selectCompositorMode();
 }
-document.querySelectorAll('#demoClassSelect,#demoTypeSelect,#demoRaritySelect,#demoUpgrade,#demoGlowToggle,#demoRarityUrl,#demoTypeUrl,#demoRealBadges').forEach(el=>el.addEventListener('input',refreshCardDemo));
+document.querySelectorAll('#demoMode,#demoClassSelect,#demoTypeSelect,#demoRaritySelect,#demoUpgrade,#demoGlowToggle,#demoRarityUrl,#demoTypeUrl,#demoRealBadges').forEach(el=>el.addEventListener('input',refreshCardDemo));
 const extras=new Map();
 function assetList(card){return [...(card==='1034870'?[...knownAssets,...battleAssets,...saVideos,...saAudioSource,...lwfAssets,...saTextureAssets]:standardPaths(card).map(path=>({path,name:path.split('/').pop(),category:'artwork',verified:false,url:makeUrl(path,null)}))),...(extras.get(card)||[])];}
 function parseAssetUrl(raw){
