@@ -44,7 +44,7 @@ let lookupGeneration=0;
 function searchCard(raw){
  const requested=String(raw).trim();
  const status=document.getElementById('searchStatus');
- if(!/^\\d{7}$/.test(requested)){status.textContent='Please enter a seven-digit Dokkan card ID.';return;}
+ if(!/^\d{7}$/.test(requested)){status.textContent='Please enter a seven-digit Dokkan card ID.';return;}
  // DokkanDB example uses an odd card-page ID (1034871) and even image asset ID (1034870).
  // This is only a candidate pattern, not a universal ID rule.
  id=requested.endsWith('1')?requested.slice(0,-1)+'0':requested;
