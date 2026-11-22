@@ -63,6 +63,30 @@
 .kit-buttons button.secondary{background:#27334c}
 @media(max-width:800px){.kit-layout{grid-template-columns:1fr}.kit-art{max-width:350px}}
 @media(prefers-reduced-motion:reduce){.kit-meter>span{transition:none}}
+
+/* DokkanDB-inspired skill presentation from the supplied page source. */
+.kit-section{background:#242c3c!important;--skill-blue:#0786ff}
+.kit-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.kit-toolbar button{background:#273e65;border:1px solid #6c87b4;border-radius:7px;padding:8px 14px;color:#fff;font-weight:800;cursor:pointer}
+.kit-toolbar button.active{background:#0b70d0;border-color:#8bcaff}
+.kit-toolbar .kit-view-note{font-size:12px;color:#cad9ef}
+.kit-view-panels{display:grid;gap:18px}
+.kit-skill-box{overflow:hidden;border:4px solid #087bda;border-radius:8px;background:#3b526e;color:#fff}
+.kit-skill-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:45px;padding:9px 14px;background:linear-gradient(180deg,#5079ba,#24416e);border-bottom:4px solid #087bda;color:#fff;font-style:italic;font-weight:900;text-transform:uppercase;letter-spacing:.1px;font-size:14px;text-shadow:0 1px 2px #14223a}
+.kit-skill-head .kit-burst{font-size:10px;font-style:italic;border:2px solid #839fc3;box-shadow:inset 0 0 4px #c2dcff5e;border-radius:30px;padding:5px 9px;background:linear-gradient(#57749f,#1d3155)}
+.kit-skill-body{padding:14px 16px;font-size:13px;line-height:1.54;background:#3c526d}
+.kit-skill-body p{margin:0 0 5px;color:#fff;font-size:inherit}
+.kit-skill-body .kit-heading{color:#23d4ff;font-weight:900;font-size:13px;margin:9px 0 4px;text-shadow:1px 1px #14283f}
+.kit-skill-body ul{margin:2px 0 8px;padding-left:23px}
+.kit-skill-body li{padding-left:2px;margin:2px 0 6px}
+.kit-skill-body .stat-highlight{color:#2de77e;font-weight:900}
+.kit-skill-body .stat-down{color:#ff626d;font-weight:900}
+.kit-skill-body .kit-category{color:#57d8ff;font-weight:850}
+.kit-skill-body .kit-emphasis{font-weight:800}
+.kit-skill-body .kit-important{background:#f7e42d;border-radius:4px;color:#111;padding:0 3px;font-weight:950}
+#kitEditFields[hidden],#kitViewPanels[hidden]{display:none}
+.kit-right .kit-view-panels{min-width:0}
+@media(max-width:800px){.kit-skill-body{padding:12px;font-size:12px}.kit-skill-head{padding:9px}}
 </style></head><body><header><h1>◆ Dokkan Asset Tester</h1><p>Card art and battle sprite texture explorer · <a href="./cards.html" style="font-weight:800">Browse Card List</a></p></header>
 <main><section class="hero"><small>CHARACTER ASSET EXPLORER</small><h2 id="cardTitle">Super Saiyan Goku — 1034870</h2><p id="cardDescription">Known Goku artwork and battle textures; other cards use candidate URL patterns.</p><p><a id="cardPageLink" href="https://www.dokkandb.com/cards/1034871" target="_blank" rel="noopener noreferrer">View on DokkanDB</a></p></section>
 <section class="hero" style="margin-top:18px">
@@ -97,8 +121,13 @@
 </div>
 </div></section>
 <section class="hero kit-section" id="kitSection">
-<h2 class="kit-title">Character Kit Builder</h2>
-<p class="kit-subtle">Editable kit layout based on the supplied DokkanDB character page. Goku's starting values come from the supplied page snapshot, not from live retrieval. Changes stay in your browser until exported.</p>
+<h2 class="kit-title">Character Kit</h2>
+<p class="kit-subtle">A Dokkan-style character details view based on the page you supplied. Choose Edit Kit to change the underlying values; this is not an official Eclipse patch.</p>
+<div class="kit-toolbar">
+<button id="kitViewButton" type="button" class="active" aria-pressed="true">View Kit</button>
+<button id="kitEditButton" type="button" aria-pressed="false">Edit Kit</button>
+<span class="kit-view-note">Leader Skill, Passive Skill and Super Attack formatted like the reference.</span>
+</div>
 <div class="kit-layout">
 <div class="kit-left">
 <div class="kit-art" aria-label="Character artwork layers">
@@ -115,6 +144,12 @@
 </div></div>
 </div>
 <div class="kit-right">
+<div id="kitViewPanels" class="kit-view-panels">
+<section class="kit-skill-box"><div class="kit-skill-head"><span>Leader Skill</span><span class="kit-burst">LEAD BUFFS</span></div><div id="kitLeaderView" class="kit-skill-body"></div></section>
+<section class="kit-skill-box"><div class="kit-skill-head"><span id="kitPassiveHeading">Passive Skill</span></div><div id="kitPassiveView" class="kit-skill-body"></div></section>
+<section class="kit-skill-box"><div class="kit-skill-head"><span id="kitSAHeading">Super Attack</span></div><div id="kitSAView" class="kit-skill-body"></div></section>
+</div>
+<div id="kitEditFields" hidden>
 <div class="kit-panel"><h3>Identity</h3><div class="kit-content">
 <label>Unit Name<input id="kitName" value="Super Saiyan Goku"></label>
 <label>Leader Skill<input id="kitLeader" value="Golden Fighters Category Ki +3 and HP, ATK &amp; DEF +50%"></label>
@@ -136,7 +171,7 @@ Additional modes listed in the source: Standard, Survival and Androids/Cell Saga
 <button type="button" id="kitExport">Export Kit JSON</button>
 <button type="button" class="secondary" id="kitReset">Reset Goku values</button>
 </div><p class="kit-subtle" id="kitStatus" aria-live="polite">Editing preview only. This JSON is not an installable Eclipse patch.</p>
-</div></div></section>
+</div></div></div></section>
 <form id="cardLookup" class="controls" style="padding:15px;border:1px solid #526b91;border-radius:12px;background:#1e2d49"><label for="cardId" style="font-weight:800">Search card ID</label><input id="cardId" name="cardId" value="1034870" inputmode="numeric" pattern="[0-9]{7}" maxlength="7" placeholder="e.g. 1034871" required aria-label="Card ID"><button type="submit" style="background:#bdeeff;color:#11243b">Find images</button><button type="button" id="resetCard">Reset to Goku</button></form><p id="searchStatus" aria-live="polite" style="color:#c2d9fb"></p><div class="controls"><button data-filter="all" class="selected">All assets</button><button data-filter="artwork">Card art</button><button data-filter="text">SA text</button><button data-filter="audio">Audio</button><button data-filter="battle">Battle textures</button><button data-filter="video">Super Attack video</button><button data-filter="sa-texture">SA effects</button><button data-filter="lwf">LWF files</button><button data-filter="custom">Added assets</button><input id="search" placeholder="Filter file names or paths..." aria-label="Filter assets"></div>
 <section class="hero" style="padding:16px;margin:0 0 18px;background:#172b4e">
 <strong>Previews unavailable? Import saved image files</strong>
@@ -264,11 +299,68 @@ function writeKit(data){
  for(const [key,field] of Object.entries(kitFields)){document.getElementById(field).value=data[key]??''}
  updateKitVisual();
 }
+
+const gokuPassiveSections=[
+ ['Basic effect(s)',['ATK & DEF 600% ↑',"Damage reduction rate & chance of evading enemy's attack 50% ↑",'Guards all attacks']],
+ ['For every turn passed',['ATK & DEF 60% ↓ (no more than -300%)',"Damage reduction rate & chance of evading enemy's attack 10% ↓ (no more than -50%)"]],
+ ['For 5 turns from the start of battle',['Ki +6','Great chance of performing a critical hit','Launches an additional Super Attack']],
+ ['When attacking with 12 or more Ki',['ATK 300% ↑']],
+ ['When receiving an attack with 12 or more Ki',['DEF 200% ↑']]
+];
+function kitText(el,value){el.textContent=value}
+function styleLeaderText(value){
+ const node=document.getElementById('kitLeaderView');node.replaceChildren();const p=document.createElement('p');
+ // Preserve the exact user text while emphasizing a category name when identifiable.
+ const match=value.match(/^(.*?)((?:Category|Type) Ki\s*[+]?[0-9])/i);
+ if(match&&match[1]){const label=document.createElement('span');label.className='kit-category';label.textContent=match[1];p.append(label,document.createTextNode(value.slice(match[1].length)))}
+ else p.textContent=value;node.append(p);
+}
+function appendBullet(group,item){
+ const li=document.createElement('li');const indicator=item.match(/\s([↑↓])(?:\s|$)/);
+ if(indicator){
+  const i=item.indexOf(indicator[0]);li.append(document.createTextNode(item.slice(0,i)));
+  const span=document.createElement('span');span.className=indicator[1]==='↑'?'stat-highlight':'stat-down';span.textContent=indicator[1];
+  li.append(' ',span,document.createTextNode(item.slice(i+indicator[0].length)));
+ }else li.textContent=item;
+ group.append(li);
+}
+function updateKitReadingView(){
+ const data=readKit();
+ styleLeaderText(data.leader);
+ document.getElementById('kitPassiveHeading').textContent='Passive Skill - '+(data.passiveName||'Unnamed');
+ document.getElementById('kitSAHeading').textContent='Super Attack (12 Ki) - '+(data.saName||'Unnamed');
+ const passive=document.getElementById('kitPassiveView');passive.replaceChildren();
+ const clean=(s)=>s.replace(/\s+/g,' ').trim();
+ if(id==='1034870'&&clean(data.passive)===clean(gokuKitDefaults.passive)){
+  for(const [heading,lines] of gokuPassiveSections){
+   const h=document.createElement('div');h.className='kit-heading';h.textContent=heading;passive.append(h);
+   const ul=document.createElement('ul');for(const line of lines)appendBullet(ul,line);passive.append(ul);
+  }
+  const note=document.createElement('p');note.style.cssText='font-size:11px;color:#cfdaef;margin-top:10px';
+  note.textContent='This is the standard-mode summary from your reference. Additional mode conditions require separate source data.';passive.append(note);
+ }else{
+  const chunks=data.passive.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  for(const chunk of chunks){
+   const hMatch=chunk.match(/^([^:]{3,95}):\s*(.*)/);
+   if(hMatch){const h=document.createElement('div');h.className='kit-heading';h.textContent=hMatch[1];passive.append(h);
+    if(hMatch[2]){const ul=document.createElement('ul');for(const part of hMatch[2].split(/;\s*/).filter(Boolean))appendBullet(ul,part);passive.append(ul)}
+   }else{const ul=document.createElement('ul');for(const part of chunk.split(/;\s*/).filter(Boolean))appendBullet(ul,part);passive.append(ul)}
+  }
+ }
+ const sa=document.getElementById('kitSAView');sa.replaceChildren();const p=document.createElement('p');p.textContent=data.saEffect;sa.append(p);
+}
+function setKitMode(edit){
+ document.getElementById('kitViewPanels').hidden=edit;document.getElementById('kitEditFields').hidden=!edit;
+ for(const [button,active] of [['kitViewButton',!edit],['kitEditButton',edit]]){const el=document.getElementById(button);el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active))}
+}
+document.getElementById('kitViewButton').addEventListener('click',()=>{updateKitReadingView();setKitMode(false)});
+document.getElementById('kitEditButton').addEventListener('click',()=>setKitMode(true));
 function updateKitVisual(){
  const data=readKit(),maximum=Math.max(data.hp,data.atk,data.def,1);
  for(const key of ['hp','atk','def'])document.getElementById(key+'Bar').style.width=(100*data[key]/maximum).toFixed(2)+'%';
  const type=data.characterType;
  document.getElementById('kitSection').style.setProperty('--kit-type-color',typeColors[type]);
+ updateKitReadingView();
  const base='character/card/'+id+'_folder/card_'+id+'_';
  for(const [node,suffix] of [['kitBg','bg'],['kitCharacter','character'],['kitEffect','effect']]){
   const a=assetList(id).find(x=>x.path===base+suffix+'.png');
